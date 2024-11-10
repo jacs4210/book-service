@@ -29,6 +29,7 @@ jobs:
         env:
           CIUSER_SECRET: ${{ secrets.CIUSER_SECRET }}
         run: |
+          mkdir -p ~/.ssh
           echo "$CIUSER_SECRET" | base64 --decode > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           eval "$(ssh-agent -s)"
