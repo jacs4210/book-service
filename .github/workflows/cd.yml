@@ -1,0 +1,42 @@
+name: CD BookService
+
+on:
+  push:
+    branches:
+      - deploy_app
+  #pull_request:
+    #branches: 
+    #- main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.1
+      
+      - name: Install maven and jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: 21
+      
+      - name: Build app
+        run: mvn clean install -Dmaven.test.skip=true
+
+      - name: Decode Secret and add to SSH agent
+        if: success()
+        env:
+          CIUSER_SECRET: ${{ secrets.CIUSER_SECRET }}
+        run: |
+          echo "$CIUSER_SECRET" | base64 --decode > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+
+      - name: Copy app
+        if: success()
+        env:
+          SERVER_NAME: ${{ secrets.SERVER_NAME }}
+        run: |
+          scp -o StrictHostKeyChecking=no target/book-service-0.0.1-SNAPSHOT.jar ciuser@$SERVER_NAME:/tmp
