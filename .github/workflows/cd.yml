@@ -41,3 +41,8 @@ jobs:
           SERVER_NAME: ${{ secrets.SERVER_NAME }}
         run: |
           scp -o StrictHostKeyChecking=no target/book-service-0.0.1-SNAPSHOT.jar ciuser@$SERVER_NAME:/tmp
+
+      - name: Deploy app
+        if: success()
+        run: |
+          ssh -o StrictHostKeyChecking=no ciuser@$SERVER_NAME "java -jar /tmp/book-service-0.0.1-SNAPSHOT.jar &"
