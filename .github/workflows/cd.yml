@@ -1,15 +1,13 @@
 name: CD BookService
 
 on:
-  push:
-    branches:
-      - deploy_app
-  #pull_request:
-    #branches: 
-    #- main
+  pull_request:
+    types: 
+      - closed
 
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
