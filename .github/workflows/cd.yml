@@ -47,4 +47,8 @@ jobs:
         env:
           SERVER_NAME: ${{ secrets.SERVER_NAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no ciuser@$SERVER_NAME "java -jar /tmp/book-service-0.0.1-SNAPSHOT.jar &"
+          # Si existe un proceso corriendo, se detiene.
+          ssh -o StrictHostKeyChecking=no ciuser@$SERVER_NAME "PID_BOOKSERVICE=$(ps aux | grep 'book-service-0.0.1-SNAPSHOT.jar' | grep -v grep | awk '{print $2}'); if [[ ! -z "$PID_BOOKSERVICE" ]]; then kill -9 $PID_BOOKSERVICE; fi"
+
+          # Se inicia aplicación.
+          ssh -o StrictHostKeyChecking=no ciuser@$SERVER_NAME "nohup java -jar /tmp/book-service-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &"
